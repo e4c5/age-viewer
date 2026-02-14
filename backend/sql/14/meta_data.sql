@@ -16,7 +16,7 @@ SELECT
         ) THEN 'e'
         ELSE 'v'
     END as kind,
-    c.reltuples::INTEGER AS cnt
+    c.reltuples AS cnt
 FROM pg_catalog.pg_class c
 JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
 WHERE c.relkind = 'r'
