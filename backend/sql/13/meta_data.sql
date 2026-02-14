@@ -5,14 +5,10 @@ SELECT
             SELECT 1 
             FROM pg_catalog.pg_attribute a
             WHERE a.attrelid = c.oid 
-                AND a.attname = 'start'
+                AND a.attname IN ('start', 'end')
                 AND NOT a.attisdropped
-        ) AND EXISTS (
-            SELECT 1 
-            FROM pg_catalog.pg_attribute a
-            WHERE a.attrelid = c.oid 
-                AND a.attname = 'end'
-                AND NOT a.attisdropped
+            GROUP BY a.attrelid
+            HAVING COUNT(DISTINCT a.attname) = 2
         ) THEN 'e'
         ELSE 'v'
     END as kind,
