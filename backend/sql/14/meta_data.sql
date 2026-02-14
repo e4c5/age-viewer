@@ -1,13 +1,19 @@
-SELECT * FROM (
-        SELECT c.relname AS label, n.oid as namespace_id, c.reltuples AS cnt
-        FROM pg_catalog.pg_class c
-        JOIN pg_catalog.pg_namespace n
-        ON n.oid = c.relnamespace
-        WHERE c.relkind = 'r'
-        AND n.nspname = '%s'
-) as q1
-JOIN ag_graph as g ON q1.namespace_id = g.namespace
-INNER JOIN ag_label as label
-
-ON label.name = q1.label
-AND label.graph = g.graphid;
+SELECT 
+    c.relname AS name,
+    CASE 
+        WHEN EXISTS (
+            SELECT 1 
+            FROM pg_catalog.pg_attribute a
+            WHERE a.attrelid = c.oid 
+                AND a.attname IN ('start', 'end')
+                AND NOT a.attisdropped
+            HAVING COUNT(*) >= 2
+        ) THEN 'e'
+        ELSE 'v'
+    END as kind,
+    c.reltuples::INTEGER AS cnt
+FROM pg_catalog.pg_class c
+JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+WHERE c.relkind = 'r'
+    AND n.nspname = '%s'
+    AND c.relname NOT LIKE '_ag_label%';
